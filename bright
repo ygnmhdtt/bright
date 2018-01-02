@@ -1,0 +1,26 @@
+#!/bin/sh
+
+function help() {
+  echo ""
+  echo " usage:"
+  echo " bright n(must be number) -> make brightness for given number(cannot set 0)(recommended 1.0 ~ 1.5)"
+  echo " bright help              -> show this help"
+}
+
+val=$1
+
+if [ "$val" = "" ]; then
+  help
+  exit 0
+fi
+
+RET=`echo "scale=5; 1 + $val" | bc`
+
+if [ "$RET" != "1" ]; then
+  xrandr --output eDP1 --brightness $val
+  echo "brighten for $val"
+  exit 0
+fi
+
+help
+exit 0
