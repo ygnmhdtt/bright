@@ -3,24 +3,63 @@
 function help() {
   echo ""
   echo " usage:"
-  echo " bright n(must be number) -> make brightness for given number(cannot set 0)(recommended 1.0 ~ 1.5)"
-  echo " bright help              -> show this help"
+  echo " bright help          -> show this help"
+  echo " bright list          -> show list of displayname"
+  echo " bright n displayname -> make brightness for given number for given displayname(cannot set 0)(recommended 1.0 ~ 1.5)"
 }
 
-val=$1
+function list() {
+  # this outputs list of display name
+  echo `xrandr -q | awk '$2=="connected"{print $1}'`
+}
 
-if [ "$val" = "" ]; then
+function exists() {
+  given=$1
+  list=`list`
+  
+  ret='false'
+  for displayname in `list`
+  do
+    if [ $given = $displayname ]; then
+      ret='true'
+    fi
+  done
+  echo $ret
+}
+
+arg=$1
+
+if [ "$arg" = "" ]; then
   help
   exit 0
 fi
 
-RET=`echo "scale=5; 1 + $val" | bc`
-
-if [ "$RET" != "1" ]; then
-  xrandr --output eDP1 --brightness $val
-  echo "brighten for $val"
+if [ "$arg" = "list" ]; then
+  echo `list`
   exit 0
 fi
 
-help
+# return if arg is not number or arg is 0
+RET=`echo "scale=5; 1 + $arg" | bc`
+if [ "$RET" = "1" ]; then
+  help
+  exit 0
+fi
+
+displayname=$2
+
+if [ "$displayname" = "" ]; then
+  help
+  exit 0
+fi
+
+if ! `exists "$displayname"` ; then
+  help
+  echo " ** check given displayname is valid **"
+  exit 0
+fi
+
+xrandr --output $displayname --brightness $arg
+echo "brighten for $arg"
+
 exit 0
